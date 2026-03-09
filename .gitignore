@@ -1,0 +1,14 @@
+/target
+
+**/*.rs.bk
+.DS_Store
+.env
+.log
+*.log
+.secrets
+
+# IDE
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
