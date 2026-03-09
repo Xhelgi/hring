@@ -5,11 +5,11 @@
 
 use eframe::egui;
 
-mod theme;
-mod data;
-mod utils;
 mod app;
+mod data;
+mod theme;
 mod ui;
+mod utils;
 
 use app::MyApp;
 
@@ -31,6 +31,6 @@ fn main() -> eframe::Result {
     eframe::run_native(
         "My Arch Launcher",
         options,
-        Box::new(|cc| Ok(Box::new(MyApp::new(cc)))), 
+        Box::new(|cc| Ok(Box::new(MyApp::new(cc)))),
     )
 }

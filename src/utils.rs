@@ -3,11 +3,16 @@
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, version 3.
 
-use std::{fs, path::{Path, PathBuf}};
-use eframe::{egui::{self, Color32, Pos2}, epaint::{PathShape, PathStroke}};
+use eframe::{
+    egui::{self, Color32, Pos2},
+    epaint::{PathShape, PathStroke},
+};
+use std::{
+    fs,
+    path::{Path, PathBuf},
+};
 
 use crate::data::{AppEntry, LauncherConfig};
-
 
 // * ============================================================================
 // * 🛠️ UTILITY FUNCTIONS (File System & Parsing)
@@ -18,9 +23,9 @@ use crate::data::{AppEntry, LauncherConfig};
 pub fn get_all_apps() -> Vec<AppEntry> {
     let mut apps = Vec::new();
     let home = std::env::var("HOME").unwrap_or_default();
-    
+
     // XDG standard locations for Linux desktop entries.
-    let paths =[
+    let paths = [
         "/usr/share/applications".to_string(),
         "/usr/local/share/applications".to_string(),
         format!("{}/.local/share/applications", home),
@@ -57,7 +62,7 @@ pub fn parse_desktop_file(path: &Path) -> Option<AppEntry> {
 
     for line in content.lines() {
         let line = line.trim();
-        
+
         // Skip hidden or disabled entries.
         if line == "NoDisplay=true" || line == "Hidden=true" {
             is_hidden = true;
@@ -71,9 +76,12 @@ pub fn parse_desktop_file(path: &Path) -> Option<AppEntry> {
         if line.starts_with("Exec=") && exec.is_empty() {
             let raw_exec = line.strip_prefix("Exec=")?;
             exec = raw_exec
-                .replace("%f", "").replace("%F", "")
-                .replace("%u", "").replace("%U", "")
-                .replace("%c", "").replace("%C", "")
+                .replace("%f", "")
+                .replace("%F", "")
+                .replace("%u", "")
+                .replace("%U", "")
+                .replace("%c", "")
+                .replace("%C", "")
                 .trim()
                 .to_string();
         }
@@ -120,14 +128,20 @@ pub fn load_config() -> LauncherConfig {
 
 /// Helper function generating a pie-slice polygon based on angular parameters.
 /// Used for drawing the central navigation segments.
-pub fn get_shape_from_degree(center: Pos2, start: f32, end: f32, radius: f32, color: Color32) -> PathShape {
+pub fn get_shape_from_degree(
+    center: Pos2,
+    start: f32,
+    end: f32,
+    radius: f32,
+    color: Color32,
+) -> PathShape {
     let mut points = vec![center];
     let steps = 20; // Number of segments to approximate circular arc.
-    
+
     for i in 0..=steps {
         let t = start + (end - start) * (i as f32 / steps as f32);
         points.push(center + egui::vec2(f32::cos(t), -f32::sin(t)) * radius);
     }
-    
+
     PathShape::convex_polygon(points, color, PathStroke::new(1.0, Color32::BLACK))
 }

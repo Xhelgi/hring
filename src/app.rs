@@ -3,15 +3,18 @@
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, version 3.
 
-use std::{collections::HashMap, sync::mpsc::{self, Receiver, Sender}, thread};
 use eframe::egui::Key;
-
-use crate::{
-    data::{AppEntry, GApp, Group}, 
-    theme::ThemeSettings, 
-    utils::{get_all_apps, load_config}
+use std::{
+    collections::HashMap,
+    sync::mpsc::{self, Receiver, Sender},
+    thread,
 };
 
+use crate::{
+    data::{AppEntry, GApp, Group},
+    theme::ThemeSettings,
+    utils::{get_all_apps, load_config},
+};
 
 // * ============================================================================
 // * 🚀 APPLICATION STATE
@@ -24,21 +27,20 @@ pub struct MyApp {
     pub filtered_apps: Vec<AppEntry>,
     pub groups: Vec<Group>,
     pub selected_group_index: Option<usize>, // Tracks the currently "hoovered" or active donut sector.
-    
+
     // * Settings
     // ? Maps string identifiers (from config) to actual egui::Key enum variants.
     pub key_map: HashMap<String, Key>,
     pub theme: ThemeSettings,
-    
+
     // * Async Search Worker
     // ? Using Channels (mpsc) to handle search queries in a separate thread.
     // ? This prevents the UI from freezing while scanning large number of files.
     pub last_request_id: i32,
     pub last_result_id: i32,
-    pub to_worker: Sender<(String, i32)>,             // Send search queries here.
-    pub from_worker: Receiver<(Vec<AppEntry>, i32)>,  // Receive search results here.
+    pub to_worker: Sender<(String, i32)>, // Send search queries here.
+    pub from_worker: Receiver<(Vec<AppEntry>, i32)>, // Receive search results here.
 }
-
 
 // * ============================================================================
 // * 🎯 MAIN APP IMPLEMENTATION
@@ -50,7 +52,7 @@ impl MyApp {
     pub fn new(_cc: &eframe::CreationContext<'_>) -> Self {
         let all_apps = get_all_apps();
         let apps_copy = all_apps.clone();
-        
+
         let config = load_config();
 
         // Join parsed JSON data with system app records to create "GApp" items.
@@ -58,14 +60,15 @@ impl MyApp {
         for saved_group in config.groups {
             let mut apps = Vec::new();
             for sapp in saved_group.apps {
-                if let Some(app) = all_apps.iter()
-                    .find(|a| a.name.to_lowercase() == sapp.name.to_lowercase()) {
-
-                        apps.push(GApp { 
-                            name: app.name.clone(), 
-                            exec: app.exec.clone(), 
-                            bind: sapp.bind 
-                        });
+                if let Some(app) = all_apps
+                    .iter()
+                    .find(|a| a.name.to_lowercase() == sapp.name.to_lowercase())
+                {
+                    apps.push(GApp {
+                        name: app.name.clone(),
+                        exec: app.exec.clone(),
+                        bind: sapp.bind,
+                    });
                 }
             }
             groups.push(Group {
@@ -93,10 +96,21 @@ impl MyApp {
 
         // Hardcoded key-to-enum mapping.
         let mut key_map = HashMap::new();
-        let keys =[
-            ("q", Key::Q), ("w", Key::W), ("e", Key::E), ("a", Key::A), 
-            ("s", Key::S), ("d", Key::D), ("z", Key::Z), ("x", Key::X), ("c", Key::C),
-            ("1", Key::Num1), ("2", Key::Num2), ("3", Key::Num3), ("4", Key::Num4), ("5", Key::Num5)
+        let keys = [
+            ("q", Key::Q),
+            ("w", Key::W),
+            ("e", Key::E),
+            ("a", Key::A),
+            ("s", Key::S),
+            ("d", Key::D),
+            ("z", Key::Z),
+            ("x", Key::X),
+            ("c", Key::C),
+            ("1", Key::Num1),
+            ("2", Key::Num2),
+            ("3", Key::Num3),
+            ("4", Key::Num4),
+            ("5", Key::Num5),
         ];
         for (k, v) in keys {
             key_map.insert(k.to_string(), v);
@@ -123,7 +137,7 @@ impl MyApp {
             .arg("-c")
             .arg(exec)
             .spawn()
-            .ok(); 
+            .ok();
     }
 
     /// Safely lookup a configured key binding in the hashmap.
