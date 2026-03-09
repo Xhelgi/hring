@@ -12,3 +12,6 @@
 .idea/
 *.sublime-project
 *.sublime-workspace
+
+# My Note Files
+notes.md

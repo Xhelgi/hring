@@ -4,6 +4,7 @@ Hring is an experimental orbital app launcher for Linux. It uses a radial, donut
 
 ## 🚀 Features
 - **Orbital UI:** Applications are arranged in a radial "donut" layout for quick, keyboard-driven access.
+- **Wallpaper Transparency:** Integrates seamlessly with your desktop background.
 - **Async Filtering:** Search results are processed in a background thread to prevent UI freezing.
 - **Keyboard-Focused:** Primary navigation is handled via custom keybinds.
 - **Rust Powered:** Fast, memory-safe, and low-resource usage.
@@ -29,6 +30,17 @@ cd hring
 cargo build --release
 # The binary will be available at target/release/hring
 ```
+### Setup Execution
+
+To run `hring` from anywhere, copy the binary to your local bin directory:
+```bash
+cp target/release/hring ~/.local/bin/
+```
+
+**Note:** Ensure that `~/.local/bin` is in your environment's `$PATH`. If it's not, add the following line to your `~/.bashrc` or `~/.zshrc` configuration file:
+```bash
+export PATH="$HOME/.local/bin:$PATH"
+```
 
 ## ⚙️ Configuration
 
@@ -40,6 +52,10 @@ Copy it to your config directory:
 mkdir -p ~/.config/hring
 cp examples/config.json ~/.config/hring/config.json
 ```
+
+## 🤝 Contributing
+
+I welcome any feedback and contributions! Please see [CONTRIBUTING](CONTRIBUTING.md) for details on how to get started.
 
 ## 📐 Capacity Guidelines
 Hring is optimized for standard 1920x1080 resolution (1.0x - 1.25x scaling). The recommended limits are:
@@ -62,23 +78,22 @@ All visual parameters (colors, line strokes, padding) are currently defined in `
 *Planned: Move these settings to a persistent JSON configuration file.*
 The default theme features a clean, semi-transparent monochrome aesthetic with green accents.
 
+## 💬 Feedback & Issues
+If you find a bug or have a suggestion:
+1. **Check existing [Issues](https://github.com/Xhelgi/hring/issues):** Someone might already be working on it, or you might find a discussion you can join. 
+2. **Contribute:** If you see an open issue that you’d like to fix yourself, feel free to pick it up!
+3. **Open a new Issue:** If your bug or idea isn't listed yet, please open a new one. 
+
+Please use the following **labels** for your reports:
+- `bug`: Something isn't working.
+- `enhancement`: New features or UI improvements.
+- `refactor`: Code quality and structural changes.
+- `documentation`: Fixes or additions to the README and docs.
+
 ## 🛠 Built With
 - `Rust`
 - `egui` - Immediate mode GUI
 - `serde` - JSON configuration
-
-## Known Issues & Limitations
-- **Experimental Stage:** The configuration file format may change in future versions.
-- **Icon Support:** Currently, application icons are not displayed (only names and binds).
-- **Groups-Name Support** Groups
-- **Wayland Input:** In some Wayland compositors, the window focus might behave differently compared to X11.
-- **System Paths:** Currently, it scans `/usr/share/applications` and `~/.local/share/applications`. If your system stores apps elsewhere, they might not appear.
-- **Group Labels:** Currently, group names are not rendered in the UI; only their assigned keybinds are visible.
-- **Keybind Conflicts:** There is no validation for duplicate keybinds. Assigning the same key to multiple apps or groups may cause unexpected behavior.
-- **Scaling:** UI elements may overflow if too many groups or applications are added. A dynamic layout engine (recalculating spacing and visibility) is planned for future versions.
-
-## Feedback
-Since this is an early-stage project, feedback is highly appreciated! Feel free to open an issue if you encounter bugs or have suggestions for new features.
 
 ## 📜 License
 Distributed under the GPL-3.0 License. See LICENSE for more information.
