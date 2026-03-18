@@ -1,73 +1,83 @@
-# Hring Launcher
+# Welcome to version 0.2.0 of Hring Launcher
 
-**Hring** is an experimental orbital app launcher for Linux. It uses a radial, donut-style interface to help you organize and launch applications quickly. Designed for tiling window managers and minimal desktop environments.
+**Hring** is a lightweight launcher for Linux systems. It was created with the goal of providing a beautiful, graph-like interface for improved visual perception (I hate lists).
 
-## Features
-- **Orbital UI:** Applications are arranged in a radial "donut" layout for quick, keyboard-driven access.
-- **Wallpaper Transparency:** Integrates seamlessly with your desktop background.
-- **Async Filtering:** Search results are processed in a background thread to prevent UI freezing.
-- **Keyboard-Focused:** Primary navigation is handled via custom keybinds.
-- **Rust Powered:** Fast, memory-safe, and low-resource usage.
+However, the main focus was on **quick keyboard control**.
 
-## Preview
-![Hring Screenshot 3](assets/screenshot_3.png)
+Controls are divided into groups and applications within them — you can assign any keyboard key to each of them.
 
-***Wallpaper**: The wallpaper shown in the screenshot is for illustrative purposes only and is not included with the software.*
+# What does it look like?
+The app has extensive customization options, including transparency.
 
-***Other Images**: Other Bilds you can find [hier](assets/). You can also send **your own setup** and **design-settings file** to me!*
+![](assets/green_example.png)
+![](assets/orange_example.png)
+![](assets/blue_example.png)
+
+## Configuration
+
+The project configuration was divided into three files:
+- `graphics.toml` --- contains all graphics settings
+- `binds.toml` --- contains settings for groups, applications and hotkeys
+- `config.toml` --- contains a list of directories for searching .desktop links.
+
+**You don't need to create them manually.** The Hring Launcher automatically creates configuration files in `~/.config/hring/` when you first launch it. You can edit them afterward. 
+
+If the application doesn't launch after editing the configuration files, the error is most likely due to incorrect formatting. Try deleting them and letting the launcher create new ones.
+
+### Examples
+
+Various graphics configuration templates [are available here.](examples/) 
+
+*You can submit your graphics.toml to the [discussion forum](https://github.com/Xhelgi/hring/discussions) or to xhelgi@proton.me; they may be included in the repository.*
 
 ## Installation
-### Prerequisites
-- [Rust](https://www.rust-lang.org/) (latest stable)
-- Linux with X11 or Wayland *(maded and tested with Arch Linux)*
+
+### Prerequisites:
+
+- `Rust` (latest stable)
+- `Linux` with `X11` or `Wayland`
 
 ### Build from source
-```bash
+``` Bash
 git clone https://github.com/Xhelgi/hring
 cd hring
 cargo build --release
 # The binary will be available at target/release/hring
 ```
-### Setup Execution
 
+### Setup Execution
 To run `hring` from anywhere, copy the binary to your local bin directory:
-```bash
+``` Bash
 cp target/release/hring ~/.local/bin/
 ```
-
 **Note:** Ensure that `~/.local/bin` is in your environment's `$PATH`. If it's not, add the following line to your `~/.bashrc` or `~/.zshrc` configuration file:
-```bash
+```
 export PATH="$HOME/.local/bin:$PATH"
 ```
 
-## Configuration
+### If you are using `i3`
 
-Hring looks for its configuration file at ~/.config/hring/config.json.
-You can find an example configuration in [examples/config.json](examples/config.json).
+Add **your path** to the executable (you can skip the steps of adding `.local/bin` to `$PATH`) and the desired launch buttons.
 
-Copy it to your config directory:
-```Bash
-mkdir -p ~/.config/hring
-cp examples/config.json ~/.config/hring/config.json
-```
-
-## Can be usefull
-- [Capacity Guidelines](docs/Capacity.md)
-- [Keybinds](docs/Keybinds.md)
-- [Design & Customization](docs/Design.md)
-- [Feedback & Issues](docs/FeedbackIssues.md)
+1. Open `~/.config/i3/config`
+2. Add line `bindsym $mod+d exec --no-startup-id /home/yuki/.local/bin/hring`
 
 ## Contributing
+I'm always happy if you decide to help develop the Hring. See the [Contributing](CONTRIBUTING.md).
 
-I welcome any feedback and contributions! Please see [CONTRIBUTING](CONTRIBUTING.md) for details on how to get started.
+## Feedback & Issueus
+[Click Me!](docs/FeedbackIssues.md)
 
-## Built With
-- `Rust` - Base
-- `egui` - Immediate mode GUI
-- `serde` - JSON configuration
+## Build With
+- `Rust`
+- `eframe`
+- `serde`
+- `toml`
+- `bincode`
+- `homedir`
+- `freedesktop_entry_parser`
 
-## AI Disclosure
-This project was built as a learning exercise. While the core logic and architecture were designed manually, I used an LLM to assist with code refactoring, variable naming, and English documentation.
+*Thanks to the creators of these crates for the excellent functionality and documentation.*
 
 ## License
 Distributed under the GPL-3.0 License. See [LICENSE](LICENSE) for more information.

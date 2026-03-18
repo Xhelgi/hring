@@ -3,34 +3,29 @@
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, version 3.
 
+mod app;
+mod config;
+mod data;
+mod data_impl;
+mod helpers;
+mod ui;
+
+use app::Hring;
 use eframe::egui;
 
-mod app;
-mod data;
-mod theme;
-mod ui;
-mod utils;
-
-use app::MyApp;
-
-// * ============================================================================
-// * 🏁 MAIN ENTRY POINT
-// * ============================================================================
-
 fn main() -> eframe::Result {
-    // Configure window to be borderless, transparent, and always on top for a "launcher" feel.
     let options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
             .with_decorations(false)
-            .with_transparent(true)
+            .with_always_on_top()
             .with_fullscreen(true)
-            .with_always_on_top(),
+            .with_transparent(true),
         ..Default::default()
     };
 
     eframe::run_native(
-        "My Arch Launcher",
+        "Hring",
         options,
-        Box::new(|cc| Ok(Box::new(MyApp::new(cc)))),
+        Box::new(|_cc| Ok(Box::new(Hring::default()))),
     )
 }

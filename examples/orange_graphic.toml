@@ -1,0 +1,67 @@
+[graphic]
+# Panels
+main_panel_color = [30, 32, 34, 255]
+left_panel_color = [24, 26, 28, 255]
+left_panel_width = 260.0
+
+# Menu Panel
+menu_items_hover_color =[220, 80, 50, 255]
+menu_items_font_color =[200, 205, 210, 255]
+menu_items_font_size = 18.0
+
+# Middle Panel
+middle_text = ":Hring"
+center_color =[45, 48, 52, 255]
+middle_text_color =[220, 80, 50, 255]
+middle_text_size = 18.0
+center_radius = 45.0
+
+# Apps
+app_color_active =[220, 80, 50, 255]
+app_color_unactive =[55, 60, 65, 255]
+app_font_color_active =[20, 22, 24, 255]
+app_font_color_unactive =[150, 155, 160, 255]
+app_title_font_color_active = [255, 255, 255, 255]
+app_title_font_color_unactive =[120, 125, 130, 255]
+app_title_background_color_active =[220, 80, 50, 255]
+app_title_background_color_unactive =[40, 44, 48, 255]
+app_font_size_active = 20.0
+app_font_size_unactive = 12.0
+app_title_font_size_active = 18.0
+app_title_font_size_unactive = 12.0
+app_radius = 24.0
+app_offset = 240.0
+apps_spacing_rad = 0.45
+app_title_offset = 40.0
+app_title_background_paddings = [8.0, 8.0]
+
+# Lines
+line_color_active =[220, 80, 50, 255]
+line_color_unactive = [45, 50, 55, 255]
+line_width_active = 6.0
+line_width_unactive = 2.0
+line_point_scale_1 = 0.5
+line_point_scale_2 = 0.7
+line_point_scale_3 = 1.0
+
+# Segments
+segment_color_active =[220, 80, 50, 255]
+segment_color_unactive =[40, 44, 48, 255]
+segment_stroke_color_active =[255, 120, 90, 255]
+segment_stroke_color_unactive =[55, 60, 65, 255]
+segment_bind_color_active =[255, 255, 255, 255]
+segment_bind_color_unactive = [70, 75, 80, 255]
+segment_bind_font_color_active = [20, 22, 24, 255]
+segment_bind_font_color_unactive =[180, 185, 190, 255]
+segment_stroke_width_active = 4.0
+segment_stroke_width_unactive = 0.0
+segment_bind_font_size_active = 16.0
+segment_bind_font_size_unactive = 10.0
+segment_radius = 65.0
+segment_points_count = 48
+segment_bind_radius = 14.0
+
+# Radar
+radar_color =[35, 38, 42, 255]
+radar_stroke_color =[45, 50, 55, 255]
+radar_stroke_width = 2.0

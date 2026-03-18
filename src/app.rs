@@ -3,145 +3,202 @@
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, version 3.
 
-use eframe::egui::Key;
+use freedesktop_entry_parser::parse_entry;
 use std::{
     collections::HashMap,
+    fs,
+    path::PathBuf,
     sync::mpsc::{self, Receiver, Sender},
     thread,
 };
 
 use crate::{
-    data::{AppEntry, GApp, Group},
-    theme::ThemeSettings,
-    utils::{get_all_apps, load_config},
+    config,
+    data::{App, AppLink, Graphic, Group},
 };
 
-// * ============================================================================
-// * 🚀 APPLICATION STATE
-// * ============================================================================
-
-pub struct MyApp {
-    // * UI Input State
-    // ? Tracks real-time user input and the filtered list of apps currently visible.
-    pub search_query: String,
-    pub filtered_apps: Vec<AppEntry>,
-    pub groups: Vec<Group>,
-    pub selected_group_index: Option<usize>, // Tracks the currently "hoovered" or active donut sector.
-
-    // * Settings
-    // ? Maps string identifiers (from config) to actual egui::Key enum variants.
-    pub key_map: HashMap<String, Key>,
-    pub theme: ThemeSettings,
-
-    // * Async Search Worker
-    // ? Using Channels (mpsc) to handle search queries in a separate thread.
-    // ? This prevents the UI from freezing while scanning large number of files.
-    pub last_request_id: i32,
-    pub last_result_id: i32,
-    pub to_worker: Sender<(String, i32)>, // Send search queries here.
-    pub from_worker: Receiver<(Vec<AppEntry>, i32)>, // Receive search results here.
+#[derive(Debug)]
+pub struct Hring {
+    pub apps: Vec<AppLink>,
+    pub binds: Vec<Group>,
+    pub graphic: Graphic,
+    pub from_config_loader: Receiver<Vec<Group>>,
+    pub to_search_worker: Sender<String>,
+    pub from_search_worker: Receiver<Vec<AppLink>>,
+    pub was_updated_from_config_loader: bool,
+    pub search_text: String,
+    pub selected_group: Option<usize>,
 }
 
-// * ============================================================================
-// * 🎯 MAIN APP IMPLEMENTATION
-// * ============================================================================
+impl Default for Hring {
+    fn default() -> Self {
+        let graphic = config::get_graphic();
+        let glocal_config = config::get_global_config();
+        let apps = config::get_app_links_from_cache();
+        let binds = config::get_binds_from_cache();
 
-impl MyApp {
-    /// Initializes application state, scans the filesystem, loads config,
-    /// and starts the search-filtering worker thread.
-    pub fn new(_cc: &eframe::CreationContext<'_>) -> Self {
-        let all_apps = get_all_apps();
-        let apps_copy = all_apps.clone();
+        let (sender_config_loader_to_update, receiver_update_from_config_loader): (
+            Sender<Vec<Group>>,
+            Receiver<Vec<Group>>,
+        ) = mpsc::channel();
 
-        let config = load_config();
+        let (sender_config_loader_to_search, receiver_search_from_config_loader): (
+            Sender<Vec<AppLink>>,
+            Receiver<Vec<AppLink>>,
+        ) = mpsc::channel();
 
-        // Join parsed JSON data with system app records to create "GApp" items.
-        let mut groups = Vec::new();
-        for saved_group in config.groups {
-            let mut apps = Vec::new();
-            for sapp in saved_group.apps {
-                if let Some(app) = all_apps
-                    .iter()
-                    .find(|a| a.name.to_lowercase() == sapp.name.to_lowercase())
-                {
-                    apps.push(GApp {
-                        name: app.name.clone(),
-                        exec: app.exec.clone(),
-                        bind: sapp.bind,
-                    });
-                }
-            }
-            groups.push(Group {
-                name: saved_group.name,
-                apps,
-                bind: saved_group.bind,
-            });
-        }
+        let (sender_update_to_search, receiver_search_from_update): (
+            Sender<String>,
+            Receiver<String>,
+        ) = mpsc::channel();
 
-        // Spin up an asynchronous worker to handle potentially heavy filtering logic.
-        let (tx_query, rx_query) = mpsc::channel::<(String, i32)>();
-        let (tx_result, rx_result) = mpsc::channel::<(Vec<AppEntry>, i32)>();
+        let (sender_search_to_update, receiver_update_from_search): (
+            Sender<Vec<AppLink>>,
+            Receiver<Vec<AppLink>>,
+        ) = mpsc::channel();
 
+        // config_loader thread
         thread::spawn(move || {
-            while let Ok((query, id)) = rx_query.recv() {
-                let query_low = query.to_lowercase();
-                let results: Vec<AppEntry> = all_apps
+            let (app_links, hash_map) = Self::search_app_links(glocal_config.pathes);
+            let conf_groups = config::get_binds_from_config();
+
+            let groups: Vec<Group> = conf_groups
+                .into_iter()
+                .map(|g| {
+                    let apps: Vec<App> = g
+                        .apps
+                        .into_iter()
+                        .filter_map(|a| {
+                            if let Some(exec) = hash_map.get(&a.name.to_lowercase()) {
+                                Some(App {
+                                    bind: a.bind,
+                                    name: a.name,
+                                    exec: exec.clone(),
+                                })
+                            } else {
+                                println!("App {} not fround!", a.name);
+                                None
+                            }
+                        })
+                        .collect();
+
+                    Group { bind: g.bind, apps }
+                })
+                .collect();
+
+            config::create_new_cache_for_groups(&groups);
+            config::create_new_cache_for_app_links(&app_links);
+
+            _ = sender_config_loader_to_update.send(groups);
+            _ = sender_config_loader_to_search.send(app_links);
+        });
+
+        // search thread
+        thread::spawn(move || {
+            let mut was_updated_from_loader = false;
+            let has_apps_from_cache = apps.is_some();
+
+            let mut apps_from_loader: Vec<AppLink> = Vec::new();
+
+            if has_apps_from_cache {
+                apps_from_loader = apps.unwrap();
+            }
+
+            while let Ok(search_text) = receiver_search_from_update.recv() {
+                if !was_updated_from_loader
+                    && let Ok(new_apps_list) = receiver_search_from_config_loader.try_recv()
+                {
+                    apps_from_loader = new_apps_list;
+                    was_updated_from_loader = true;
+                }
+
+                let search_text = search_text.to_ascii_lowercase();
+
+                // searching
+                if !was_updated_from_loader && !has_apps_from_cache {
+                    _ = sender_search_to_update.send(Vec::new());
+                    continue;
+                }
+
+                let filtred_apps: Vec<AppLink> = apps_from_loader
                     .iter()
-                    .filter(|app| app.name.to_lowercase().contains(&query_low))
+                    .filter(|a| a.name.contains(&search_text))
                     .cloned()
                     .collect();
-                tx_result.send((results, id)).ok();
+
+                _ = sender_search_to_update.send(filtred_apps);
             }
         });
 
-        // Hardcoded key-to-enum mapping.
-        let mut key_map = HashMap::new();
-        let keys = [
-            ("q", Key::Q),
-            ("w", Key::W),
-            ("e", Key::E),
-            ("a", Key::A),
-            ("s", Key::S),
-            ("d", Key::D),
-            ("z", Key::Z),
-            ("x", Key::X),
-            ("c", Key::C),
-            ("1", Key::Num1),
-            ("2", Key::Num2),
-            ("3", Key::Num3),
-            ("4", Key::Num4),
-            ("5", Key::Num5),
-        ];
-        for (k, v) in keys {
-            key_map.insert(k.to_string(), v);
-        }
+        _ = sender_update_to_search.send(String::new());
 
-        Self {
-            search_query: String::new(),
-            filtered_apps: apps_copy,
-            last_request_id: 0,
-            last_result_id: 0,
-            to_worker: tx_query,
-            from_worker: rx_result,
-            groups,
-            selected_group_index: None,
-            key_map,
-            theme: ThemeSettings::default(),
+        Hring {
+            apps: Vec::new(),
+            binds: binds.unwrap_or_default(),
+            graphic,
+            from_config_loader: receiver_update_from_config_loader,
+            to_search_worker: sender_update_to_search,
+            from_search_worker: receiver_update_from_search,
+            was_updated_from_config_loader: false,
+            search_text: String::new(),
+            selected_group: None,
         }
     }
+}
 
-    /// Spawns a shell-based command to launch an application.
-    /// Uses `.ok()` to ensure errors don't terminate the launcher itself.
-    pub fn launch_selected(&self, exec: &str) {
-        std::process::Command::new("sh")
-            .arg("-c")
-            .arg(exec)
-            .spawn()
-            .ok();
+impl Hring {
+    // TODO: To Rework
+    fn search_app_links(pathes: Vec<String>) -> (Vec<AppLink>, HashMap<String, String>) {
+        let mut apps: Vec<Option<AppLink>> = Vec::new();
+
+        for path in pathes {
+            if let Ok(file_pathes) = fs::read_dir(&path) {
+                file_pathes
+                    .into_iter()
+                    .flatten()
+                    .for_each(|p| apps.push(Self::parse_desktop_file(&p.path())));
+            } else {
+                println!("Path {path} cannot be read!");
+            }
+        }
+
+        let mut apps: Vec<AppLink> = apps.into_iter().flatten().collect();
+
+        apps.sort_by(|a, b| a.name.cmp(&b.name));
+        apps.dedup_by(|a, b| a.name == b.name);
+
+        let hash_map: HashMap<String, String> = apps
+            .iter()
+            .map(|a| (a.name.clone(), a.exec.clone()))
+            .collect();
+
+        (apps, hash_map)
     }
 
-    /// Safely lookup a configured key binding in the hashmap.
-    pub fn get_key(&self, bind: &str) -> Option<Key> {
-        self.key_map.get(&bind.to_lowercase()).copied()
+    // TODO: To Rework
+    fn parse_desktop_file(path: &PathBuf) -> Option<AppLink> {
+        let entry = parse_entry(path).ok()?;
+        let section = entry.section("Desktop Entry")?;
+
+        let name = section.attr("Name").first()?;
+        let exec = section.attr("Exec").first()?;
+        let no_display = section.attr("NoDisplay").first();
+
+        let exec: String = exec
+            .split_whitespace()
+            .filter(|s| !s.contains('%'))
+            .collect::<Vec<&str>>()
+            .join(" ");
+
+        if let Some(nd) = no_display
+            && nd == "true"
+        {
+            return None;
+        }
+
+        Some(AppLink {
+            name: name.clone().to_lowercase(),
+            exec: exec.clone(),
+        })
     }
 }

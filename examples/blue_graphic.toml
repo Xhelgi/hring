@@ -1,0 +1,67 @@
+[graphic]
+# Panels
+main_panel_color =[5, 8, 14, 255]
+left_panel_color =[10, 14, 22, 255]
+left_panel_width = 150.0
+
+# Menu Panel
+menu_items_hover_color = [0, 240, 255, 70]
+menu_items_font_color =[180, 230, 255, 255]
+menu_items_font_size = 10.0
+
+# Middle Panel
+middle_text = ""
+center_color =[5, 8, 14, 255]
+middle_text_color =[0, 240, 255, 255]
+middle_text_size = 18.0
+center_radius = 10.0
+
+# Apps
+app_color_active =[0, 240, 255, 255]
+app_color_unactive =[15, 40, 60, 255]
+app_font_color_active =[0, 10, 20, 255]
+app_font_color_unactive =[100, 150, 180, 255]
+app_title_font_color_active =[255, 255, 255, 255]
+app_title_font_color_unactive =[60, 100, 130, 255]
+app_title_background_color_active =[0, 240, 255, 150]
+app_title_background_color_unactive = [10, 20, 30, 150]
+app_font_size_active = 18.0
+app_font_size_unactive = 12.0
+app_title_font_size_active = 16.0
+app_title_font_size_unactive = 12.0
+app_radius = 22.0
+app_offset = 250.0
+apps_spacing_rad = 0.4
+app_title_offset = 30.0
+app_title_background_paddings = [16.0, 6.0]
+
+# Lines
+line_color_active =[0, 240, 255, 255]
+line_color_unactive =[20, 50, 80, 150]
+line_width_active = 4.0
+line_width_unactive = 1.5
+line_point_scale_1 = 0.0
+line_point_scale_2 = 0.0
+line_point_scale_3 = 1.0
+
+# Segments
+segment_color_active =[0, 240, 255, 255]
+segment_color_unactive =[10, 25, 45, 255]
+segment_stroke_color_active =[255, 255, 255, 255]
+segment_stroke_color_unactive = [0, 150, 200, 100]
+segment_bind_color_active =[255, 255, 255, 255]
+segment_bind_color_unactive = [20, 50, 80, 255]
+segment_bind_font_color_active = [0, 10, 20, 255]
+segment_bind_font_color_unactive =[0, 200, 255, 150]
+segment_stroke_width_active = 3.0
+segment_stroke_width_unactive = 1.0
+segment_bind_font_size_active = 16.0
+segment_bind_font_size_unactive = 10.0
+segment_radius = 80.0
+segment_points_count = 30
+segment_bind_radius = 12.0
+
+# Radar
+radar_color = [0, 240, 255, 10]
+radar_stroke_color =[0, 240, 255, 50]
+radar_stroke_width = 20.0
